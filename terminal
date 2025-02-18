@@ -1,0 +1,17 @@
+npm install -g pnpm
+pnpm create vite vue-gridify --template vue-ts
+cd vue-gridify
+pnpm install
+pnpm add -D vite-plugin-dts
+pnpm add -D @types/node
+pnpm dev
+
+# NPM hesabına giriş yap
+npm login
+
+# Paketi derle
+pnpm build
+
+# Giriş yaptıktan sonra tekrar yayınlamayı dene
+npm publish --access public
+

@@ -1,0 +1,55 @@
+{
+  "name": "vue-gridify",
+  "version": "0.1.0", 
+  "description": "A powerful and customizable grid component based on Vue 3",
+  "author": "Kodizim",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/vue-gridify.umd.js",
+  "module": "./dist/vue-gridify.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-gridify.es.js",
+      "require": "./dist/vue-gridify.umd.js"
+    }
+  },
+  "types": "./dist/types/index.d.ts",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build", 
+    "preview": "vite preview",
+    "prepublishOnly": "pnpm build"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "@vitejs/plugin-vue": "^4.5.0",
+    "sass": "^1.69.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0",
+    "vue-tsc": "^1.8.0"
+  },
+  "keywords": [
+    "vue",
+    "grid", 
+    "table",
+    "data-grid",
+    "data-table",
+    "vue3",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kodizim/vue-gridify"
+  },
+  "bugs": {
+    "url": "https://github.com/kodizim/vue-gridify/issues"
+  },
+  "homepage": "https://github.com/kodizim/vue-gridify#readme"
+}
