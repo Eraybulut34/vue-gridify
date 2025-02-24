@@ -1,6 +1,6 @@
 {
   "name": "vue-gridify",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A powerful and customizable grid component based on Vue 3",
   "author": "eraybulut34",
   "license": "MIT",
@@ -14,13 +14,16 @@
   ],
   "main": "./dist/vue-gridify.umd.js",
   "module": "./dist/vue-gridify.es.js",
+  "style": "./dist/style.css",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/vue-gridify.es.js",
-      "require": "./dist/vue-gridify.umd.js"
-    }
+      "require": "./dist/vue-gridify.umd.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./dist/style.css": "./dist/style.css"
   },
-  "types": "./dist/types/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
