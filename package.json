@@ -1,6 +1,6 @@
 {
   "name": "vue-gridify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A powerful and customizable grid component based on Vue 3",
   "author": "eraybulut34",
   "license": "MIT",
@@ -49,10 +49,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/kodizim/vue-gridify"
+    "url": "https://github.com/eraybulut34/vue-gridify"
   },
   "bugs": {
-    "url": "https://github.com/kodizim/vue-gridify/issues"
+    "url": "https://github.com/eraybulut34/vue-gridify/issues"
   },
-  "homepage": "https://github.com/kodizim/vue-gridify#readme"
+  "homepage": "https://github.com/eraybulut34/vue-gridify#readme"
 }
