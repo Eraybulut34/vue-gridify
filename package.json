@@ -1,8 +1,8 @@
 {
   "name": "vue-gridify",
-  "version": "0.1.0", 
+  "version": "0.1.0",
   "description": "A powerful and customizable grid component based on Vue 3",
-  "author": "Kodizim",
+  "author": "eraybulut34",
   "license": "MIT",
   "type": "module",
   "files": [
@@ -19,12 +19,15 @@
   "types": "./dist/types/index.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "vite build", 
+    "build": "vite build",
     "preview": "vite preview",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {
-    "vue": "^3.3.0"
+    "vue": "^3.3.0",
+    "xlsx": "^0.18.5"
+  },
+  "dependencies": {
   },
   "devDependencies": {
     "@types/node": "^20.17.19",
@@ -37,7 +40,7 @@
   },
   "keywords": [
     "vue",
-    "grid", 
+    "grid",
     "table",
     "data-grid",
     "data-table",

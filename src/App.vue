@@ -2,6 +2,7 @@
   <div class="app">
     <h1>Vue Gridify Demo</h1>
     <VueGridify 
+      :enable-excel-export="true"
       :columns="gridColumns"
       :data="gridData"
       :page-size="5"
