@@ -163,177 +163,173 @@ const exportToExcel = () => {
 }
 </script>
 
-<style scoped lang="scss">
-.vue-gridify {
-  &-container {
-    width: 100%;
-    overflow: auto;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    border: 1px solid #cbd5e1;
-  }
+<style>
+.vue-gridify-container {
+  width: 100%;
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #cbd5e1;
+}
 
-  &-table-container {
-    overflow-x: auto;
-  }
+.vue-gridify-table-container {
+  overflow-x: auto;
+}
 
-  &-toolbar {
-    padding: 1rem;
-    border-bottom: 1px solid #cbd5e1;
-    display: flex;
-    justify-content: flex-end;
-  }
+.vue-gridify-toolbar {
+  padding: 1rem;
+  border-bottom: 1px solid #cbd5e1;
+  display: flex;
+  justify-content: flex-end;
+}
 
-  &-export-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: #10b981;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+.vue-gridify-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
-    &:hover {
-      background-color: #059669;
-    }
+.vue-gridify-export-btn:hover {
+  background-color: #059669;
+}
 
-    svg {
-      width: 1rem;
-      height: 1rem;
-    }
-  }
+.vue-gridify-export-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
 
-  &-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  }
+.vue-gridify-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
 
-  &-th {
-    padding: 1rem;
-    text-align: left;
-    background: #f8fafc;
-    color: #1e293b;
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border: 1px solid #cbd5e1;
-    transition: background-color 0.2s ease;
-    
-    &.resizable {
-      position: relative;
-      
-      &::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 25%;
-        height: 50%;
-        width: 4px;
-        background-color: #cbd5e1;
-        cursor: col-resize;
-        transition: background-color 0.2s ease;
-      }
+.vue-gridify-th {
+  padding: 1rem;
+  text-align: left;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #cbd5e1;
+  transition: background-color 0.2s ease;
+}
 
-      &:hover::after {
-        background-color: #94a3b8;
-      }
-    }
+.vue-gridify-th.resizable {
+  position: relative;
+}
 
-    &:hover {
-      background: #f1f5f9;
-    }
-  }
+.vue-gridify-th.resizable::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 25%;
+  height: 50%;
+  width: 4px;
+  background-color: #cbd5e1;
+  cursor: col-resize;
+  transition: background-color 0.2s ease;
+}
 
-  tbody {
-    tr {
-      transition: all 0.2s ease;
+.vue-gridify-th.resizable:hover::after {
+  background-color: #94a3b8;
+}
 
-      &:hover {
-        background-color: #f8fafc;
-      }
+.vue-gridify-th:hover {
+  background: #f1f5f9;
+}
 
-      td {
-        padding: 0.875rem 1rem;
-        border: 1px solid #cbd5e1;
-        color: #334155;
-        font-size: 0.875rem;
-        line-height: 1.25rem;
-      }
-    }
-  }
+.vue-gridify-table tr {
+  transition: all 0.2s ease;
+}
 
-  &-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem;
-    border-top: 1px solid #cbd5e1;
-    background: #f8fafc;
-    font-size: 0.875rem;
-  }
+.vue-gridify-table tr:hover {
+  background-color: #f8fafc;
+}
 
-  &-pagination-info {
-    color: #64748b;
-  }
+.vue-gridify-table td {
+  padding: 0.875rem 1rem;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
 
-  &-pagination-controls {
-    display: flex;
-    gap: 0.25rem;
-  }
+.vue-gridify-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-top: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 0.875rem;
+}
 
-  &-pagination-btn {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #cbd5e1;
-    background: white;
-    color: #64748b;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.vue-gridify-pagination-info {
+  color: #64748b;
+}
 
-    &:hover:not(:disabled) {
-      background: #f1f5f9;
-      color: #1e293b;
-    }
+.vue-gridify-pagination-controls {
+  display: flex;
+  gap: 0.25rem;
+}
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+.vue-gridify-pagination-btn {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #64748b;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 
-    &.active {
-      background: #3b82f6;
-      color: white;
-      border-color: #3b82f6;
-    }
-  }
+.vue-gridify-pagination-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #1e293b;
+}
 
-  &-select {
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.375rem;
-    background: white;
-    color: #64748b;
-    font-size: 0.875rem;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
+.vue-gridify-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      ring: 2px solid rgba(59, 130, 246, 0.5);
-    }
-  }
+.vue-gridify-pagination-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.vue-gridify-select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: white;
+  color: #64748b;
+  font-size: 0.875rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+.vue-gridify-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  ring: 2px solid rgba(59, 130, 246, 0.5);
 }
 </style>
