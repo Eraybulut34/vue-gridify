@@ -6,14 +6,8 @@ npm install vue-gridify
 ```
 
 ### Excel Export Feature
-If you want to use the Excel export feature:
+Enable the export feature in your component:
 
-1. Install the XLSX package:
-```sh
-npm install xlsx
-```
-
-2. Enable the export feature in your component:
 ```vue
 <template>
   <VueGridify

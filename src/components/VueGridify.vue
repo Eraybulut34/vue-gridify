@@ -42,6 +42,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import type { GridColumn, GridData } from '../types'
+import * as XLSX from 'xlsx'
 
 interface Props {
   columns: GridColumn[]
@@ -66,29 +67,22 @@ const visibleData = computed(() => {
   return props.data.slice(start, end)
 })
 
-const exportToExcel = async () => {
-  try {
-    // XLSX modülünü dinamik olarak import et
-    const XLSX = await import('xlsx')
-    
-    // Tüm veriyi al (sayfalama olmadan)
-    const data = props.data.map(row => {
-      const newRow: Record<string, any> = {}
-      props.columns.forEach(col => {
-        newRow[col.header] = row[col.field]
-      })
-      return newRow
+const exportToExcel = () => {
+  // Tüm veriyi al (sayfalama olmadan)
+  const data = props.data.map(row => {
+    const newRow: Record<string, any> = {}
+    props.columns.forEach(col => {
+      newRow[col.header] = row[col.field]
     })
+    return newRow
+  })
 
-    const ws = XLSX.utils.json_to_sheet(data)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Data')
-    
-    // Excel dosyasını indir
-    XLSX.writeFile(wb, `${props.fileName}.xlsx`)
-  } catch (error) {
-    console.error('Excel export için xlsx paketi gereklidir. Lütfen yükleyin: npm install xlsx')
-  }
+  const ws = XLSX.utils.json_to_sheet(data)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Data')
+  
+  // Excel dosyasını indir
+  XLSX.writeFile(wb, `${props.fileName}.xlsx`)
 }
 </script>
 
