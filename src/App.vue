@@ -79,6 +79,22 @@
         />
       </section>
 
+            <!-- Custom Styling -->
+      <section class="demo-section">
+        <h2>Custom Styling</h2>
+        <p>Apply custom CSS classes to cells. For example, the following styles are applied to the demo below:</p>
+        <ul>
+          <li><code>.custom-cell</code>: <code>border: 1px solid #6791c5;</code>, <code>font-weight: bold;</code></li>
+        </ul>
+        <VueGridify 
+          :columns="stylingColumns"
+          :data="stylingData"
+          :page-size="5"
+          rowClass="custom-row"
+          cellClass="custom-cell"
+        />
+      </section>
+
       <!-- All Features Combined -->
       <section class="demo-section">
         <h2>All Features Combined</h2>
@@ -203,6 +219,21 @@ const productColumns: GridColumn[] = [
 ]
 
 const products = [
+  { id: 1, name: 'Laptop', price: '$999', stock: 50 },
+  { id: 2, name: 'Smartphone', price: '$699', stock: 100 },
+  { id: 3, name: 'Headphones', price: '$199', stock: 200 },
+  { id: 4, name: 'Tablet', price: '$499', stock: 75 },
+  { id: 5, name: 'Smartwatch', price: '$299', stock: 150 }
+]
+
+const stylingColumns: GridColumn[] = [
+  { field: 'id', header: 'ID' },
+  { field: 'name', header: 'Product' },
+  { field: 'price', header: 'Price' },
+  { field: 'stock', header: 'Stock' }
+]
+
+const stylingData = [
   { id: 1, name: 'Laptop', price: '$999', stock: 50 },
   { id: 2, name: 'Smartphone', price: '$699', stock: 100 },
   { id: 3, name: 'Headphones', price: '$199', stock: 200 },
@@ -391,5 +422,14 @@ const handleAllFeaturesSelection = (selection: GridData[]) => {
     border-top-color: #333;
     color: #bbb;
   }
+}
+
+.custom-row {
+  background-color: #a4b7c4;
+}
+
+.custom-cell {
+  border: 1px solid #6791c5;
+  font-weight: bold;
 }
 </style>

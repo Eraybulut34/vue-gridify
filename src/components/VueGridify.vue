@@ -44,7 +44,11 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in serverSide ? data : paginatedItems" :key="row.id">
+          <tr 
+            v-for="row in serverSide ? data : paginatedItems" 
+            :key="row.id"
+            :class="rowClass"
+          >
             <td v-if="selectable" class="vue-gridify-checkbox-cell">
               <label class="vue-gridify-checkbox">
                 <input 
@@ -58,6 +62,7 @@
             <td 
               v-for="column in columns" 
               :key="column.field"
+              :class="cellClass"
             >
               {{ row[column.field] }}
             </td>
@@ -155,6 +160,8 @@ interface Props {
   totalItems?: number
   serverSide?: boolean
   loading?: boolean
+  rowClass?: string
+  cellClass?: string
 }
 
 interface Emits {
@@ -166,7 +173,7 @@ const emit = defineEmits<Emits>()
 
 const props = withDefaults(defineProps<Props>(), {
   pageSize: 10,
-  pageSizeOptions: () => [5, 10, 25, 50],
+  pageSizeOptions: () => [5, 10, 20, 50, 100],
   enableExcelExport: false,
   exportButtonText: "Export to Excel",
   fileName: 'grid-data',
@@ -174,7 +181,9 @@ const props = withDefaults(defineProps<Props>(), {
   selectedRows: () => [],
   totalItems: 0,
   serverSide: false,
-  loading: false
+  loading: false,
+  rowClass: '',
+  cellClass: ''
 })
 
 // Dahili olarak kullanılacak data referansı
