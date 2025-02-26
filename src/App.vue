@@ -25,7 +25,7 @@
       <!-- Server-side Pagination -->
       <section class="demo-section">
         <h2>Server-side Pagination</h2>
-        <p>Real-time data fetching with JSONPlaceholder API</p>
+        <p>Real-time data fetching with fake data generation</p>
         <VueGridify 
           :columns="userColumns"
           :data="users"
@@ -127,20 +127,50 @@ const userColumns: GridColumn[] = [
   { field: 'id', header: 'ID' },
   { field: 'name', header: 'Name' },
   { field: 'email', header: 'Email' },
-  { field: 'phone', header: 'Phone' }
+  { field: 'role', header: 'Role' },
+  { field: 'status', header: 'Status' }
 ]
 
 const users = ref<GridData[]>([])
 const loading = ref(false)
 const totalItems = ref(0)
 
+// Sahte veri üretme fonksiyonları
+const roles = ['Admin', 'User', 'Editor', 'Viewer', 'Manager']
+const statuses = ['Active', 'Inactive', 'Pending', 'Blocked']
+const firstNames = ['John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'James', 'Emily', 'William', 'Olivia']
+const lastNames = ['Smith', 'Johnson', 'Brown', 'Davis', 'Wilson', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White']
+
+const generateFakeUser = (id: number) => ({
+  id,
+  name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+  email: `user${id}@example.com`,
+  role: roles[Math.floor(Math.random() * roles.length)],
+  status: statuses[Math.floor(Math.random() * statuses.length)]
+})
+
+// Sahte API çağrısı simülasyonu
 const fetchUsers = async (page: number, limit: number) => {
   loading.value = true
+  
+  // API çağrısını simüle etmek için gecikme ekliyoruz
+  await new Promise(resolve => setTimeout(resolve, 500))
+  
   try {
-    const response = await fetch(`https://jsonplaceholder.typicode.com/users?_page=${page}&_limit=${limit}`)
-    const data = await response.json()
-    users.value = data
-    totalItems.value = 10 // JSONPlaceholder has 10 users
+    // Toplam kayıt sayısı
+    totalItems.value = 100
+    
+    // Sayfalama hesaplaması
+    const start = (page - 1) * limit
+    const end = start + limit
+    
+    // Sahte veri üretimi
+    const fakeData = Array.from({ length: limit }, (_, index) => 
+      generateFakeUser(start + index + 1)
+    )
+    
+    users.value = fakeData
+    console.log(fakeData)
   } finally {
     loading.value = false
   }
@@ -149,6 +179,11 @@ const fetchUsers = async (page: number, limit: number) => {
 const handlePageChange = (page: number, pageSize: number) => {
   fetchUsers(page, pageSize)
 }
+
+// İlk yükleme için veriyi çek
+onMounted(() => {
+  fetchUsers(1, 5) // İlk sayfa ve sayfa başına 5 kayıt
+})
 
 // Products Selection
 const productColumns: GridColumn[] = [
@@ -229,10 +264,6 @@ const allFeaturesData = [
 const handleAllFeaturesSelection = (selection: GridData[]) => {
   console.log('Selected items:', selection)
 }
-
-onMounted(() => {
-  fetchUsers(1, 5)
-})
 </script>
 
 <style>

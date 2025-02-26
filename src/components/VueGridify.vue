@@ -44,7 +44,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in paginatedItems" :key="row.id">
+          <tr v-for="row in serverSide ? data : paginatedItems" :key="row.id">
             <td v-if="selectable" class="vue-gridify-checkbox-cell">
               <label class="vue-gridify-checkbox">
                 <input 
@@ -212,8 +212,8 @@ const isSelected = (row: GridData) => {
 }
 
 const isAllSelected = computed(() => {
-  return paginatedItems.value.length > 0 && 
-         paginatedItems.value.every(row => isSelected(row))
+  const items = props.serverSide ? props.data : paginatedItems.value
+  return items.length > 0 && items.every(row => isSelected(row))
 })
 
 const isIndeterminate = computed(() => {
