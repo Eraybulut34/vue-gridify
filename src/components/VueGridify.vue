@@ -149,22 +149,29 @@ interface Props {
   fileName?: string
   selectable?: boolean
   selectedRows?: GridData[]
+  totalItems?: number
+  serverSide?: boolean
+  loading?: boolean
 }
 
 interface Emits {
-  (e: 'selectionChanged', rows: GridData[]): void
+  (e: 'selection-changed', rows: GridData[]): void
+  (e: 'page-changed', page: number, pageSize: number): void
 }
 
 const emit = defineEmits<Emits>()
 
 const props = withDefaults(defineProps<Props>(), {
   pageSize: 10,
-  pageSizeOptions: () => [5, 10, 25, 50, 100],
-  enableExcelExport: true,
+  pageSizeOptions: () => [5, 10, 25, 50],
+  enableExcelExport: false,
   exportButtonText: "Export to Excel",
   fileName: 'grid-data',
   selectable: false,
-  selectedRows: () => []
+  selectedRows: () => [],
+  totalItems: 0,
+  serverSide: false,
+  loading: false
 })
 
 const {
@@ -180,7 +187,14 @@ const {
 } = usePagination(props.data, {
   pageSize: props.pageSize,
   initialPage: 1,
-  totalItems: props.data.length
+  totalItems: props.serverSide ? props.totalItems : props.data.length
+})
+
+// Watch page changes for server-side pagination
+watch([() => paginationState.value.currentPage, () => paginationState.value.pageSize], ([newPage, newPageSize]) => {
+  if (props.serverSide) {
+    emit('page-changed', newPage, newPageSize)
+  }
 })
 
 // Seçim yönetimi
@@ -211,7 +225,7 @@ const toggleSelect = (row: GridData) => {
   } else {
     selectedRowsInternal.value = [...selectedRowsInternal.value, row]
   }
-  emit('selectionChanged', selectedRowsInternal.value)
+  emit('selection-changed', selectedRowsInternal.value)
 }
 
 const toggleSelectAll = () => {
@@ -225,7 +239,7 @@ const toggleSelectAll = () => {
     const newSelections = paginatedItems.value.filter(row => !isSelected(row))
     selectedRowsInternal.value = [...selectedRowsInternal.value, ...newSelections]
   }
-  emit('selectionChanged', selectedRowsInternal.value)
+  emit('selection-changed', selectedRowsInternal.value)
 }
 
 const exportToExcel = () => {
