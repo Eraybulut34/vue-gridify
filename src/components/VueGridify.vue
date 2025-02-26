@@ -189,8 +189,8 @@ const {
   setPageSize
 } = usePagination(props.data, {
   pageSize: props.pageSize,
-  initialPage: 1,
-  totalItems: props.serverSide ? props.totalItems : props.data.length
+  totalItems: props.totalItems,
+  serverSide: props.serverSide
 })
 
 // Watch page changes for server-side pagination
