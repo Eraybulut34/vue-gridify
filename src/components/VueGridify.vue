@@ -17,7 +17,7 @@
     </div>
 
     <div class="vue-gridify-table-container">
-      <table class="vue-gridify-table">
+      <table class="vue-gridify-table" :class="{ resizing: isResizing }">
         <thead>
           <tr>
             <th v-if="selectable" class="vue-gridify-checkbox-cell vue-gridify-th">
@@ -38,6 +38,9 @@
                 'vue-gridify-th': true,
                 'resizable': column.resizable 
               }"
+              :style="column.resizable ? { width: columnWidths[column.field] } : {}"
+              @mousedown="column.resizable ? startResize($event, column.field) : null"
+              :title="column.header"
             >
               {{ column.header }}
             </th>
@@ -63,6 +66,8 @@
               v-for="column in columns" 
               :key="column.field"
               :class="cellClass"
+              :style="column.resizable ? { width: columnWidths[column.field] } : {}"
+              :title="row[column.field]"
             >
               {{ row[column.field] }}
             </td>
@@ -142,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import type { GridColumn, GridData } from '../types'
 import * as XLSX from 'xlsx'
 import { usePagination } from '../composables/usePagination'
@@ -297,6 +302,67 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
   XLSX.writeFile(workbook, `${props.fileName}.xlsx`)
 }
+
+// Column resizing functionality
+const columnWidths = ref<Record<string, string>>({})
+const isResizing = ref(false)
+const currentResizeColumn = ref<string | null>(null)
+const startX = ref<number>(0)
+const startWidth = ref<number>(0)
+
+// Initialize column widths from props
+onMounted(() => {
+  props.columns.forEach(column => {
+    if (column.width) {
+      columnWidths.value[column.field] = typeof column.width === 'number' 
+        ? `${column.width}px` 
+        : column.width
+    } else if (column.resizable) {
+      columnWidths.value[column.field] = '150px' // Default width
+    }
+  })
+})
+
+// Start column resize
+const startResize = (event: MouseEvent, field: string) => {
+  isResizing.value = true
+  currentResizeColumn.value = field
+  startX.value = event.clientX
+  
+  const currentWidth = columnWidths.value[field]
+  startWidth.value = parseInt(currentWidth || '150px', 10)
+  
+  document.addEventListener('mousemove', handleResize)
+  document.addEventListener('mouseup', stopResize)
+  
+  // Prevent text selection during resize
+  event.preventDefault()
+}
+
+// Handle column resize
+const handleResize = (event: MouseEvent) => {
+  if (!isResizing.value || !currentResizeColumn.value) return
+  
+  const diffX = event.clientX - startX.value
+  const newWidth = Math.max(50, startWidth.value + diffX) // Minimum width of 50px
+  
+  columnWidths.value[currentResizeColumn.value] = `${newWidth}px`
+}
+
+// Stop column resize
+const stopResize = () => {
+  isResizing.value = false
+  currentResizeColumn.value = null
+  
+  document.removeEventListener('mousemove', handleResize)
+  document.removeEventListener('mouseup', stopResize)
+}
+
+// Clean up event listeners
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleResize)
+  document.removeEventListener('mouseup', stopResize)
+})
 </script>
 
 <style>
@@ -359,6 +425,7 @@ const exportToExcel = () => {
   width: 100%;
   border-collapse: collapse;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  table-layout: fixed; /* Bu özellik, sütun genişliklerinin doğru şekilde uygulanmasını sağlar */
 }
 
 .vue-gridify-th {
@@ -372,10 +439,14 @@ const exportToExcel = () => {
   letter-spacing: 0.05em;
   border: 1px solid #cbd5e1;
   transition: background-color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .vue-gridify-th.resizable {
   position: relative;
+  user-select: none; /* Prevent text selection during resize */
 }
 
 .vue-gridify-th.resizable::after {
@@ -400,6 +471,7 @@ const exportToExcel = () => {
 
 .vue-gridify-table tr {
   transition: all 0.2s ease;
+  height: 3rem; /* Satır yüksekliğini sabit tutar */
 }
 
 .vue-gridify-table tr:hover {
@@ -412,6 +484,12 @@ const exportToExcel = () => {
   color: #334155;
   font-size: 0.875rem;
   line-height: 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0; /* Bu özellik, text-overflow: ellipsis'in çalışması için gerekli */
+  height: 3rem; /* Hücre yüksekliğini sabit tutar */
+  box-sizing: border-box;
 }
 
 .vue-gridify-pagination {
@@ -552,5 +630,18 @@ const exportToExcel = () => {
   width: 7px;
   height: 1.5px;
   background: white;
+}
+
+.vue-gridify-table {
+  position: relative;
+}
+
+.vue-gridify-table.resizing {
+  cursor: col-resize;
+}
+
+.vue-gridify-table.resizing .vue-gridify-th,
+.vue-gridify-table.resizing td {
+  user-select: none;
 }
 </style>

@@ -1,6 +1,6 @@
 # Vue Gridify
 
-A powerful and flexible Vue 3 data grid component with built-in features for sorting, pagination, selection, and Excel export capabilities.
+A powerful and flexible Vue 3 data grid component with built-in features for sorting, pagination, selection, Excel export capabilities, and customizable styling.
 
 ## Features
 
@@ -11,6 +11,7 @@ A powerful and flexible Vue 3 data grid component with built-in features for sor
 - Excel export
 - Resizable columns
 - Customizable styling
+- Custom row and cell classes
 
 ## Installation
 
@@ -52,7 +53,64 @@ const handleSelectionChanged = (selection: GridData[]) => {
 }
 </script>
 
+## Features
+
+### Resizable Columns
+
+Enable resizable columns by setting the `resizable` property to `true` in your column definitions. You can also specify an initial width for each column.
+
+```vue
+<template>
+  <VueGridify 
+    :columns="resizableColumns"
+    :data="data"
+  />
+</template>
+
+<script setup>
+const resizableColumns = [
+  { field: 'id', header: 'ID', resizable: true, width: 80 },
+  { field: 'name', header: 'Name', resizable: true, width: 200 },
+  { field: 'description', header: 'Description', resizable: true, width: 300 }
+]
+</script>
+
+#### Resizable Column Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| resizable | boolean | false | Enable column resizing |
+| width | number \| string | undefined | Initial width of the column (number for pixels, string for CSS values) |
+
+### Custom Styling
+
+You can apply custom CSS classes to rows and cells for advanced styling.
+
+```vue
+<template>
+  <VueGridify 
+    :columns="columns"
+    :data="data"
+    rowClass="custom-row"
+    cellClass="custom-cell"
+  />
+</template>
+
+<style>
+.custom-row {
+  background-color: #f9f9f9;
+}
+.custom-row:hover {
+  background-color: #eaeaea;
+}
+.custom-cell {
+  font-weight: bold;
+  border: 1px solid #6791c5;
+}
+</style>
+
 ### Excel Export Feature
+
 Enable the export feature in your component:
 
 ```vue
@@ -71,7 +129,7 @@ Enable the export feature in your component:
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | enableExcelExport | boolean | false | Enable/disable Excel export feature |
-| exportButtonText | string | "Excel'e Aktar" | Text to display on the export button |
+| exportButtonText | string | "Export to Excel" | Text to display on the export button |
 | fileName | string | 'grid-data' | Name of the exported Excel file (without extension) |
 
 ### Row Selection Features
@@ -86,7 +144,7 @@ The grid supports row selection with checkboxes. You can select individual rows 
 #### Selection Events
 | Event | Parameters | Description |
 |-------|------------|-------------|
-| selectionChanged | (rows: GridData[]) | Emitted when row selection changes. Returns array of selected rows |
+| selection-changed | (rows: GridData[]) | Emitted when row selection changes. Returns array of selected rows |
 
 Example usage with row selection:
 ```vue
@@ -169,7 +227,7 @@ The grid comes with built-in client-side pagination with the following features:
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | pageSize | number | 10 | Number of items to display per page |
-| pageSizeOptions | number[] | [5, 10, 25, 50, 100] | Available options for page size selector |
+| pageSizeOptions | number[] | [5, 10, 20, 50, 100] | Available options for page size selector |
 
 Example usage with pagination:
 ```vue
@@ -189,14 +247,17 @@ Example usage with pagination:
 | columns | GridColumn[] | required | Column definitions |
 | data | GridData[] | required | Data to display |
 | pageSize | number | 10 | Items per page |
-| pageSizeOptions | number[] | [5,10,25,50] | Available page size options |
-| enableExcelExport | boolean | true | Enable/disable Excel export |
+| pageSizeOptions | number[] | [5, 10, 20, 50, 100] | Available page size options |
+| enableExcelExport | boolean | false | Enable/disable Excel export |
 | exportButtonText | string | "Export to Excel" | Text for export button |
 | fileName | string | "grid-data" | Excel file name |
 | selectable | boolean | false | Enable row selection |
+| selectedRows | GridData[] | [] | Pre-selected rows |
 | serverSide | boolean | false | Enable server-side pagination |
 | totalItems | number | 0 | Total number of items (for server-side pagination) |
 | loading | boolean | false | Loading state indicator |
+| rowClass | string | '' | Custom CSS class for table rows |
+| cellClass | string | '' | Custom CSS class for table cells |
 
 ## Events
 
@@ -212,9 +273,13 @@ interface GridColumn {
   field: string
   header: string
   resizable?: boolean
+  sortable?: boolean
+  filterable?: boolean
+  width?: number | string
 }
 
 interface GridData {
+  id: string | number
   [key: string]: any
 }
 ```

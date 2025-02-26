@@ -270,10 +270,10 @@ const exportData = [
 
 // Resizable Columns
 const resizableColumns: GridColumn[] = [
-  { field: 'id', header: 'ID', resizable: true },
-  { field: 'title', header: 'Title', resizable: true },
-  { field: 'description', header: 'Description', resizable: true },
-  { field: 'category', header: 'Category', resizable: true }
+  { field: 'id', header: 'ID', resizable: true, width: 80 },
+  { field: 'title', header: 'Title', resizable: true, width: 200 },
+  { field: 'description', header: 'Description', resizable: true, width: 300 },
+  { field: 'category', header: 'Category', resizable: true, width: 150 }
 ]
 
 const resizableData = [
@@ -286,11 +286,11 @@ const resizableData = [
 
 // All Features Combined
 const allFeaturesColumns: GridColumn[] = [
-  { field: 'id', header: 'ID', resizable: true },
-  { field: 'project', header: 'Project', resizable: true },
-  { field: 'status', header: 'Status', resizable: true },
-  { field: 'progress', header: 'Progress', resizable: true },
-  { field: 'deadline', header: 'Deadline', resizable: true }
+  { field: 'id', header: 'ID', resizable: true, width: 80 },
+  { field: 'project', header: 'Project', resizable: true, width: 200 },
+  { field: 'status', header: 'Status', resizable: true, width: 150 },
+  { field: 'progress', header: 'Progress', resizable: true, width: 120 },
+  { field: 'deadline', header: 'Deadline', resizable: true, width: 150 }
 ]
 
 const allFeaturesData = [
