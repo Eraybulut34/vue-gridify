@@ -18,7 +18,6 @@ export function usePagination<T>(items: T[], options: PaginationOptions = {}) {
   const currentPage = ref(initialPage)
   const itemsPerPage = ref(pageSize)
 
-  // Toplam sayfa sayısı
   const totalPages = computed(() => Math.ceil(totalItems / itemsPerPage.value))
 
   // Mevcut sayfadaki öğeler
