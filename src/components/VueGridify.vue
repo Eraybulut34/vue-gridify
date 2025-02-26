@@ -189,7 +189,7 @@ const {
   setPageSize
 } = usePagination(props.data, {
   pageSize: props.pageSize,
-  totalItems: props.totalItems,
+  totalItems: props.totalItems ?? props.data.length,
   serverSide: props.serverSide
 })
 
