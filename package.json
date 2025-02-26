@@ -26,9 +26,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "prepublishOnly": "pnpm build"
+    "prepare": "npm run build"
   },
   "peerDependencies": {
     "vue": "^3.3.0"
