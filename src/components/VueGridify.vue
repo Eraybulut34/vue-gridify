@@ -1,22 +1,38 @@
 <template>
   <div class="vue-gridify-container">
-    <div v-if="props.enableExcelExport" class="vue-gridify-toolbar">
-      <button class="vue-gridify-export-btn" @click="exportToExcel">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        {{ props.exportButtonText }}
-      </button>
+    <div v-if="enableExcelExport" class="vue-gridify-toolbar">
+      <div v-if="selectable" class="vue-gridify-selection-info">
+        {{ selectedRows.length }} rows selected
+      </div>
+      <div class="vue-gridify-toolbar-actions">
+        <button class="vue-gridify-export-btn" @click="exportToExcel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          {{ exportButtonText }}
+        </button>
+      </div>
     </div>
 
     <div class="vue-gridify-table-container">
       <table class="vue-gridify-table">
         <thead>
           <tr>
+            <th v-if="selectable" class="vue-gridify-checkbox-cell vue-gridify-th">
+              <label class="vue-gridify-checkbox">
+                <input 
+                  type="checkbox" 
+                  :checked="isAllSelected"
+                  :indeterminate="isIndeterminate"
+                  @change="toggleSelectAll"
+                >
+                <span class="vue-gridify-checkbox-checkmark"></span>
+              </label>
+            </th>
             <th 
-              v-for="column in props.columns" 
+              v-for="column in columns" 
               :key="column.field"
               :class="{ 
                 'vue-gridify-th': true,
@@ -29,8 +45,18 @@
         </thead>
         <tbody>
           <tr v-for="row in paginatedItems" :key="row.id">
+            <td v-if="selectable" class="vue-gridify-checkbox-cell">
+              <label class="vue-gridify-checkbox">
+                <input 
+                  type="checkbox" 
+                  :checked="isSelected(row)"
+                  @change="toggleSelect(row)"
+                >
+                <span class="vue-gridify-checkbox-checkmark"></span>
+              </label>
+            </td>
             <td 
-              v-for="column in props.columns" 
+              v-for="column in columns" 
               :key="column.field"
             >
               {{ row[column.field] }}
@@ -41,7 +67,7 @@
     </div>
 
     <!-- Pagination Controls -->
-    <div v-if="paginationState.totalPages > 1" class="vue-gridify-pagination">
+    <div class="vue-gridify-pagination">
       <div class="vue-gridify-pagination-info">
         Showing {{ paginationState.startIndex }} to {{ paginationState.endIndex }} of {{ paginationState.totalItems }} entries
       </div>
@@ -108,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { GridColumn, GridData } from '../types'
 import * as XLSX from 'xlsx'
 import { usePagination } from '../composables/usePagination'
@@ -121,14 +147,24 @@ interface Props {
   enableExcelExport?: boolean
   exportButtonText?: string
   fileName?: string
+  selectable?: boolean
+  selectedRows?: GridData[]
 }
+
+interface Emits {
+  (e: 'selectionChanged', rows: GridData[]): void
+}
+
+const emit = defineEmits<Emits>()
 
 const props = withDefaults(defineProps<Props>(), {
   pageSize: 10,
   pageSizeOptions: () => [5, 10, 25, 50, 100],
   enableExcelExport: true,
-  exportButtonText: "Excel'e Aktar",
-  fileName: 'grid-data'
+  exportButtonText: "Export to Excel",
+  fileName: 'grid-data',
+  selectable: false,
+  selectedRows: () => []
 })
 
 const {
@@ -146,6 +182,51 @@ const {
   initialPage: 1,
   totalItems: props.data.length
 })
+
+// Seçim yönetimi
+const selectedRowsInternal = ref<GridData[]>(props.selectedRows || [])
+
+watch(() => props.selectedRows, (newVal) => {
+  selectedRowsInternal.value = newVal || []
+})
+
+const isSelected = (row: GridData) => {
+  return selectedRowsInternal.value.some(r => r.id === row.id)
+}
+
+const isAllSelected = computed(() => {
+  return paginatedItems.value.length > 0 && 
+         paginatedItems.value.every(row => isSelected(row))
+})
+
+const isIndeterminate = computed(() => {
+  const selectedCount = paginatedItems.value.filter(row => isSelected(row)).length
+  return selectedCount > 0 && selectedCount < paginatedItems.value.length
+})
+
+const toggleSelect = (row: GridData) => {
+  const isRowSelected = isSelected(row)
+  if (isRowSelected) {
+    selectedRowsInternal.value = selectedRowsInternal.value.filter(r => r.id !== row.id)
+  } else {
+    selectedRowsInternal.value = [...selectedRowsInternal.value, row]
+  }
+  emit('selectionChanged', selectedRowsInternal.value)
+}
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    // Mevcut sayfadaki tüm öğeleri kaldır
+    selectedRowsInternal.value = selectedRowsInternal.value.filter(
+      row => !paginatedItems.value.some(r => r.id === row.id)
+    )
+  } else {
+    // Mevcut sayfadaki tüm öğeleri ekle (zaten seçili olmayanları)
+    const newSelections = paginatedItems.value.filter(row => !isSelected(row))
+    selectedRowsInternal.value = [...selectedRowsInternal.value, ...newSelections]
+  }
+  emit('selectionChanged', selectedRowsInternal.value)
+}
 
 const exportToExcel = () => {
   const data = props.data.map(row => {
@@ -181,7 +262,18 @@ const exportToExcel = () => {
   padding: 1rem;
   border-bottom: 1px solid #cbd5e1;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vue-gridify-selection-info {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.vue-gridify-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .vue-gridify-export-btn {
@@ -331,5 +423,79 @@ const exportToExcel = () => {
   outline: none;
   border-color: #3b82f6;
   ring: 2px solid rgba(59, 130, 246, 0.5);
+}
+
+.vue-gridify-checkbox-cell {
+  width: 32px;
+  text-align: center;
+  padding: 0.375rem !important;
+}
+
+.vue-gridify-checkbox {
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.vue-gridify-checkbox input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.vue-gridify-checkbox-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 14px;
+  width: 14px;
+  background-color: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.vue-gridify-checkbox:hover input ~ .vue-gridify-checkbox-checkmark {
+  border-color: #94a3b8;
+}
+
+.vue-gridify-checkbox input:checked ~ .vue-gridify-checkbox-checkmark {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.vue-gridify-checkbox input:indeterminate ~ .vue-gridify-checkbox-checkmark {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.vue-gridify-checkbox-checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.vue-gridify-checkbox input:checked ~ .vue-gridify-checkbox-checkmark:after {
+  display: block;
+  left: 4px;
+  top: 1.5px;
+  width: 3px;
+  height: 6px;
+  border: solid white;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.vue-gridify-checkbox input:indeterminate ~ .vue-gridify-checkbox-checkmark:after {
+  display: block;
+  left: 2.5px;
+  top: 5.5px;
+  width: 7px;
+  height: 1.5px;
+  background: white;
 }
 </style>
