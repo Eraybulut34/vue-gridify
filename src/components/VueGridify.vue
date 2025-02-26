@@ -121,7 +121,10 @@
       <div class="vue-gridify-page-size">
         <select 
           :value="paginationState.pageSize"
-          @change="e => setPageSize(Number(e.target.value))"
+          @change="(e: Event) => {
+            const target = e.target as HTMLSelectElement;
+            setPageSize(Number(target.value))
+          }"
           class="vue-gridify-select"
         >
           <option v-for="size in pageSizeOptions" :key="size" :value="size">
