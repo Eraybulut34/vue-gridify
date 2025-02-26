@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import type { GridColumn, GridData } from '../types'
 import * as XLSX from 'xlsx'
 import { usePagination } from '../composables/usePagination'
@@ -177,6 +177,14 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false
 })
 
+// Dahili olarak kullanılacak data referansı
+const internalData = ref<GridData[]>([...props.data])
+
+// Props'tan gelen data değişikliklerini izle
+watch(() => props.data, (newData) => {
+  internalData.value = [...newData]
+}, { immediate: true })
+
 const {
   paginatedItems,
   pageNumbers,
@@ -186,12 +194,20 @@ const {
   prevPage,
   firstPage,
   lastPage,
-  setPageSize
-} = usePagination(props.data, {
+  setPageSize,
+  updateTotalItems
+} = usePagination(internalData.value, {
   pageSize: props.pageSize,
-  totalItems: props.totalItems ?? props.data.length,
+  totalItems: props.totalItems || props.data.length,
   serverSide: props.serverSide
 })
+
+// Server-side pagination için totalItems değişikliklerini izle
+watch(() => props.totalItems, (newTotalItems) => {
+  if (props.serverSide && newTotalItems !== undefined) {
+    updateTotalItems(newTotalItems)
+  }
+}, { immediate: true })
 
 // Watch page changes for server-side pagination
 watch([() => paginationState.value.currentPage, () => paginationState.value.pageSize], ([newPage, newPageSize]) => {
@@ -200,15 +216,19 @@ watch([() => paginationState.value.currentPage, () => paginationState.value.page
   }
 })
 
-// Seçim yönetimi
-const selectedRowsInternal = ref<GridData[]>(props.selectedRows || [])
+// Seçilen satırları yönet
+const selectedRowsRef = ref<GridData[]>(props.selectedRows || [])
 
-watch(() => props.selectedRows, (newVal) => {
-  selectedRowsInternal.value = newVal || []
-})
+// Props'tan gelen selectedRows değişikliklerini izle
+watch(() => props.selectedRows, (newSelectedRows) => {
+  if (newSelectedRows) {
+    selectedRowsRef.value = newSelectedRows
+  }
+}, { immediate: true })
 
+// Bir satırın seçili olup olmadığını kontrol et
 const isSelected = (row: GridData) => {
-  return selectedRowsInternal.value.some(r => r.id === row.id)
+  return selectedRowsRef.value.some(selectedRow => selectedRow.id === row.id)
 }
 
 const isAllSelected = computed(() => {
@@ -217,47 +237,56 @@ const isAllSelected = computed(() => {
 })
 
 const isIndeterminate = computed(() => {
-  const selectedCount = paginatedItems.value.filter(row => isSelected(row)).length
-  return selectedCount > 0 && selectedCount < paginatedItems.value.length
+  const items = props.serverSide ? props.data : paginatedItems.value
+  return items.some(row => isSelected(row)) && !isAllSelected.value
 })
 
+// Bir satırın seçimini değiştir
 const toggleSelect = (row: GridData) => {
   const isRowSelected = isSelected(row)
   if (isRowSelected) {
-    selectedRowsInternal.value = selectedRowsInternal.value.filter(r => r.id !== row.id)
+    selectedRowsRef.value = selectedRowsRef.value.filter(selectedRow => selectedRow.id !== row.id)
   } else {
-    selectedRowsInternal.value = [...selectedRowsInternal.value, row]
+    selectedRowsRef.value = [...selectedRowsRef.value, row]
   }
-  emit('selection-changed', selectedRowsInternal.value)
+  emit('selection-changed', selectedRowsRef.value)
 }
 
+// Tüm satırların seçimini değiştir
 const toggleSelectAll = () => {
+  const items = props.serverSide ? props.data : paginatedItems.value
   if (isAllSelected.value) {
-    // Mevcut sayfadaki tüm öğeleri kaldır
-    selectedRowsInternal.value = selectedRowsInternal.value.filter(
-      row => !paginatedItems.value.some(r => r.id === row.id)
+    // Mevcut sayfadaki tüm satırları seçimden kaldır
+    selectedRowsRef.value = selectedRowsRef.value.filter(
+      selectedRow => !items.some(item => item.id === selectedRow.id)
     )
   } else {
-    // Mevcut sayfadaki tüm öğeleri ekle (zaten seçili olmayanları)
-    const newSelections = paginatedItems.value.filter(row => !isSelected(row))
-    selectedRowsInternal.value = [...selectedRowsInternal.value, ...newSelections]
+    // Mevcut sayfadaki tüm satırları seç
+    const newSelectedRows = [...selectedRowsRef.value]
+    items.forEach(row => {
+      if (!isSelected(row)) {
+        newSelectedRows.push(row)
+      }
+    })
+    selectedRowsRef.value = newSelectedRows
   }
-  emit('selection-changed', selectedRowsInternal.value)
+  emit('selection-changed', selectedRowsRef.value)
 }
 
+// Excel'e aktar
 const exportToExcel = () => {
-  const data = props.data.map(row => {
-    const newRow: Record<string, any> = {}
-    props.columns.forEach(col => {
-      newRow[col.header] = row[col.field]
+  const dataToExport = props.data.map(row => {
+    const exportRow: Record<string, any> = {}
+    props.columns.forEach(column => {
+      exportRow[column.header] = row[column.field]
     })
-    return newRow
+    return exportRow
   })
-
-  const ws = XLSX.utils.json_to_sheet(data)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Data')
-  XLSX.writeFile(wb, `${props.fileName}.xlsx`)
+  
+  const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
+  XLSX.writeFile(workbook, `${props.fileName}.xlsx`)
 }
 </script>
 

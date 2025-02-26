@@ -119,7 +119,14 @@ const basicData = [
   { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
   { id: 3, name: 'Bob Wilson', email: 'bob@example.com' },
   { id: 4, name: 'Alice Brown', email: 'alice@example.com' },
-  { id: 5, name: 'Charlie Davis', email: 'charlie@example.com' }
+  { id: 5, name: 'Charlie Davis', email: 'charlie@example.com' },
+  { id: 6, name: 'Eva Green', email: 'eva@example.com' },
+  { id: 7, name: 'Frank Miller', email: 'frank@example.com' },
+  { id: 8, name: 'Grace Lee', email: 'grace@example.com' },
+  { id: 9, name: 'Henry Ford', email: 'henry@example.com' },
+  { id: 10, name: 'Ivy Chen', email: 'ivy@example.com' },
+  { id: 11, name: 'Jack Black', email: 'jack@example.com' },
+  { id: 12, name: 'Karen White', email: 'karen@example.com' }
 ]
 
 // Server-side Pagination
@@ -134,6 +141,8 @@ const userColumns: GridColumn[] = [
 const users = ref<GridData[]>([])
 const loading = ref(false)
 const totalItems = ref(0)
+const currentUserPage = ref(1)
+const currentUserPageSize = ref(5)
 
 // Sahte veri üretme fonksiyonları
 const roles = ['Admin', 'User', 'Editor', 'Viewer', 'Manager']
@@ -152,10 +161,13 @@ const generateFakeUser = (id: number) => ({
 // Sahte API çağrısı simülasyonu
 const fetchUsers = async (page: number, limit: number) => {
   loading.value = true
+  currentUserPage.value = page
+  currentUserPageSize.value = limit
   
   await new Promise(resolve => setTimeout(resolve, 500))
   
   try {
+    // Toplam kayıt sayısı (gerçek API'den gelecek)
     totalItems.value = 100
     
     const start = (page - 1) * limit
@@ -164,14 +176,17 @@ const fetchUsers = async (page: number, limit: number) => {
     )
     
     users.value = fakeData
-    console.log(fakeData)
+    console.log(`Fetched page ${page} with ${limit} items per page. Total: ${totalItems.value}`)
   } finally {
     loading.value = false
   }
 }
 
 const handlePageChange = (page: number, pageSize: number) => {
-  fetchUsers(page, pageSize)
+  console.log(`Page changed to ${page}, size: ${pageSize}`)
+  if (page !== currentUserPage.value || pageSize !== currentUserPageSize.value) {
+    fetchUsers(page, pageSize)
+  }
 }
 
 // İlk yükleme için veriyi çek

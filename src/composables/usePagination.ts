@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 export interface PaginationOptions {
   pageSize?: number
@@ -11,14 +11,22 @@ export function usePagination<T>(items: T[], options: PaginationOptions = {}) {
   const {
     pageSize = 10,
     initialPage = 1,
-    totalItems = items.length,
+    totalItems: initialTotalItems = items.length,
     serverSide = false
   } = options
 
   const currentPage = ref(initialPage)
   const itemsPerPage = ref(pageSize)
+  const totalItems = ref(initialTotalItems)
 
-  const totalPages = computed(() => Math.ceil(totalItems / itemsPerPage.value))
+  // Client-side pagination için items değiştiğinde totalItems'ı güncelleme
+  watch(() => items, (newItems) => {
+    if (!serverSide) {
+      totalItems.value = newItems.length
+    }
+  }, { immediate: true })
+
+  const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / itemsPerPage.value)))
 
   // Mevcut sayfadaki öğeler
   const paginatedItems = computed(() => {
@@ -88,23 +96,38 @@ export function usePagination<T>(items: T[], options: PaginationOptions = {}) {
     }
   }
 
+  // Toplam öğe sayısını güncelle (server-side için)
+  const updateTotalItems = (count: number) => {
+    totalItems.value = count
+  }
+
   // Pagination durumu
-  const paginationState = computed(() => ({
-    currentPage: currentPage.value,
-    totalPages: totalPages.value,
-    pageSize: itemsPerPage.value,
-    totalItems,
-    startIndex: serverSide 
-      ? ((currentPage.value - 1) * itemsPerPage.value) + 1
-      : Math.min(((currentPage.value - 1) * itemsPerPage.value) + 1, totalItems),
-    endIndex: serverSide
-      ? currentPage.value * itemsPerPage.value
-      : Math.min(currentPage.value * itemsPerPage.value, totalItems),
-    hasPrevPage: currentPage.value > 1,
-    hasNextPage: currentPage.value < totalPages.value,
-    isFirstPage: currentPage.value === 1,
-    isLastPage: currentPage.value === totalPages.value
-  }))
+  const paginationState = computed(() => {
+    // Toplam öğe sayısı
+    const total = totalItems.value
+
+    // Başlangıç ve bitiş indeksleri
+    let startIndex = 0
+    let endIndex = 0
+
+    if (total > 0) {
+      startIndex = Math.min(((currentPage.value - 1) * itemsPerPage.value) + 1, total)
+      endIndex = Math.min(currentPage.value * itemsPerPage.value, total)
+    }
+
+    return {
+      currentPage: currentPage.value,
+      totalPages: totalPages.value,
+      pageSize: itemsPerPage.value,
+      totalItems: total,
+      startIndex,
+      endIndex,
+      hasPrevPage: currentPage.value > 1,
+      hasNextPage: currentPage.value < totalPages.value,
+      isFirstPage: currentPage.value === 1,
+      isLastPage: currentPage.value === totalPages.value || total === 0
+    }
+  })
 
   return {
     currentPage,
@@ -117,6 +140,7 @@ export function usePagination<T>(items: T[], options: PaginationOptions = {}) {
     prevPage,
     firstPage,
     lastPage,
-    setPageSize
+    setPageSize,
+    updateTotalItems
   }
 }
