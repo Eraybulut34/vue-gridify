@@ -153,18 +153,12 @@ const generateFakeUser = (id: number) => ({
 const fetchUsers = async (page: number, limit: number) => {
   loading.value = true
   
-  // API çağrısını simüle etmek için gecikme ekliyoruz
   await new Promise(resolve => setTimeout(resolve, 500))
   
   try {
-    // Toplam kayıt sayısı
     totalItems.value = 100
     
-    // Sayfalama hesaplaması
     const start = (page - 1) * limit
-    const end = start + limit
-    
-    // Sahte veri üretimi
     const fakeData = Array.from({ length: limit }, (_, index) => 
       generateFakeUser(start + index + 1)
     )
