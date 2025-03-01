@@ -36,10 +36,10 @@
               :key="column.field"
               :class="{ 
                 'vue-gridify-th': true,
-                'resizable': column.resizable 
+                'resizable': column.resizable && !isMobileView
               }"
-              :style="column.resizable ? { width: columnWidths[column.field] } : {}"
-              @mousedown="column.resizable ? startResize($event, column.field) : null"
+              :style="!isMobileView && column.resizable ? { width: columnWidths[column.field] } : {}"
+              @mousedown="column.resizable && !isMobileView ? startResize($event, column.field) : null"
               :title="column.header"
             >
               {{ column.header }}
@@ -66,7 +66,7 @@
               v-for="column in columns" 
               :key="column.field"
               :class="cellClass"
-              :style="column.resizable ? { width: columnWidths[column.field] } : {}"
+              :style="!isMobileView && column.resizable ? { width: columnWidths[column.field] } : {}"
               :title="row[column.field]"
             >
               {{ row[column.field] }}
@@ -307,26 +307,47 @@ const exportToExcel = () => {
 const columnWidths = ref<Record<string, string>>({})
 const isResizing = ref(false)
 const currentResizeColumn = ref<string | null>(null)
+const isMobileView = ref(false)
 const startX = ref<number>(0)
 const startWidth = ref<number>(0)
 
-// Initialize column widths from props
+// Check if we're on mobile view
+const checkMobileView = () => {
+  isMobileView.value = window.innerWidth <= 768
+}
+
+// Initialize mobile check and add resize listener
 onMounted(() => {
+  checkMobileView()
+  window.addEventListener('resize', checkMobileView)
+  
+  // Initialize column widths from props
   props.columns.forEach(column => {
     if (column.width) {
       columnWidths.value[column.field] = typeof column.width === 'number' 
         ? `${column.width}px` 
         : column.width
-    } else if (column.resizable) {
+    } else {
       columnWidths.value[column.field] = '150px' // Default width
     }
   })
 })
 
+// Clean up event listeners
+onUnmounted(() => {
+  document.removeEventListener('mousemove', handleResize)
+  document.removeEventListener('mouseup', stopResize)
+  window.removeEventListener('resize', checkMobileView)
+})
+
 // Start column resize
 const startResize = (event: MouseEvent, field: string) => {
+  // Don't start resize on mobile
+  if (isMobileView.value) return
+  
   isResizing.value = true
   currentResizeColumn.value = field
+  
   startX.value = event.clientX
   
   const currentWidth = columnWidths.value[field]
@@ -334,9 +355,6 @@ const startResize = (event: MouseEvent, field: string) => {
   
   document.addEventListener('mousemove', handleResize)
   document.addEventListener('mouseup', stopResize)
-  
-  // Prevent text selection during resize
-  event.preventDefault()
 }
 
 // Handle column resize
@@ -357,12 +375,6 @@ const stopResize = () => {
   document.removeEventListener('mousemove', handleResize)
   document.removeEventListener('mouseup', stopResize)
 }
-
-// Clean up event listeners
-onUnmounted(() => {
-  document.removeEventListener('mousemove', handleResize)
-  document.removeEventListener('mouseup', stopResize)
-})
 </script>
 
 <style>
@@ -500,6 +512,8 @@ onUnmounted(() => {
   border-top: 1px solid #cbd5e1;
   background: #f8fafc;
   font-size: 0.875rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .vue-gridify-pagination-info {
@@ -550,6 +564,108 @@ onUnmounted(() => {
   background-position: right 0.5rem center;
   background-repeat: no-repeat;
   background-size: 1.5em 1.5em;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .vue-gridify-pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .vue-gridify-pagination-info {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .vue-gridify-pagination-controls {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Hide all page number buttons except the active one on mobile */
+  .vue-gridify-pagination-btn:not(.active) {
+    display: none;
+  }
+  
+  /* But always show First, Previous, Next, Last buttons */
+  .vue-gridify-pagination-btn:first-child,
+  .vue-gridify-pagination-btn:nth-child(2),
+  .vue-gridify-pagination-btn:nth-last-child(2),
+  .vue-gridify-pagination-btn:last-child {
+    display: inline-block;
+  }
+  
+  .vue-gridify-page-size {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .vue-gridify-select {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .vue-gridify-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .vue-gridify-selection-info,
+  .vue-gridify-toolbar-actions {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Improve table responsiveness */
+  .vue-gridify-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    max-width: 100vw; /* Prevent horizontal overflow */
+  }
+  
+  .vue-gridify-table {
+    min-width: 100%; /* Ensure table takes at least full width */
+    table-layout: auto; /* Change to auto layout on mobile for flexible columns */
+  }
+  
+  .vue-gridify-th, 
+  .vue-gridify-table td {
+    padding: 0.75rem 0.5rem; /* Smaller padding on mobile */
+    min-width: auto; /* Allow columns to shrink based on content */
+    width: auto; /* Auto width for columns */
+    max-width: 150px; /* Limit maximum width on mobile */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* Reset fixed widths for resizable columns on mobile */
+  .vue-gridify-th.resizable,
+  .vue-gridify-table td {
+    width: auto !important; /* Override any inline width styles */
+    min-width: 50px; /* Minimum width to ensure readability */
+  }
+  
+  /* Hide resize handles on mobile */
+  .vue-gridify-th.resizable::after {
+    display: none;
+  }
+  
+  /* Optimize checkbox column on mobile */
+  .vue-gridify-checkbox-cell {
+    width: 24px !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Make the container take full width of the screen */
+  .vue-gridify-container {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
 }
 
 .vue-gridify-select:focus {
